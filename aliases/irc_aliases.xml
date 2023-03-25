@@ -254,30 +254,38 @@ end</script>
 			<Alias isActive="yes" isFolder="no">
 				<name>irc_update</name>
 				<script>if wotpack_installer then
+  wotpack_installer._prev_user = wotpack_installer._prev_user or wotpack_installer.user
+  wotpack_installer._prev_branch = wotpack_installer._prev_branch or wotpack_installer.branch
+  wotpack_installer._prev_aliases = wotpack_installer._prev_aliases or wotpack_installer.aliases
+  wotpack_installer._prev_scripts = wotpack_installer._prev_scripts or wotpack_installer.scripts
+  
   wotpack_installer.user = "craigrs84"
   wotpack_installer.branch = "main"
-  wotpack_installer:download_install("irc", "all")
-end
-
-
---assumes fname is lowercase and has had any spaces replaced with underscores
-function wotpack_installer:download_install(fname, ftype)
-  if not io.exists(getMudletHomeDir() .. "/wotpack_installer_downloads") then
-    lfs.mkdir(getMudletHomeDir() .. "/wotpack_installer_downloads")
-  end
-  if not io.exists(getMudletHomeDir() .. "/wotpack_installer_downloads/" .. ftype) then
-    lfs.mkdir(getMudletHomeDir() .. "/wotpack_installer_downloads/" .. ftype)
-  end
-  local dname = fname .. "_" .. ftype
-  local path_end = ftype .. "/" .. dname .. ".xml"
-  local url = "https://raw.githubusercontent.com/"..self.user.."/WoTMUD/"..self.branch.."/" .. path_end
-  local saveto = getMudletHomeDir() .. "/wotpack_installer_downloads/" .. path_end
-  self:echo("Downloading updated " .. dname .. "...\n")
-  downloadFile(saveto, url)
+  wotpack_installer.aliases = table.union(wotpack_installer.aliases, {"irc_aliases"})
+  wotpack_installer.scripts = table.union(wotpack_installer.scripts, {"irc_scripts"})
+  wotpack_installer:download_install("irc", "aliases")
+  wotpack_installer:download_install("irc", "scripts")
+  
+  tempTimer(15, function()
+    wotpack_installer.user = wotpack_installer._prev_user
+    wotpack_installer.branch = wotpack_installer._prev_branch 
+    wotpack_installer.aliases = wotpack_installer._prev_aliases
+    wotpack_installer.aliases = wotpack_installer._prev_scripts
+  end)
 end</script>
 				<command></command>
 				<packageName></packageName>
-				<regex>irc update</regex>
+				<regex>^irc update$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_uninstall</name>
+				<script>uninstallPackage("irc_aliases")
+uninstallPackage("irc_scripts")
+cecho("Uninstalled.\n")
+</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>^irc uninstall$</regex>
 			</Alias>
 		</AliasGroup>
 	</AliasPackage>

@@ -40,7 +40,7 @@ irc.enabled = irc.enabled or false</script>
   end
   
   --Gag when connect starts
-  self.gag = self.gag or (target_type == "server" and message == "*** Checking Ident")
+  self.gag = self.gag or (target_type == "server" and message:match("^***"))
   
   --Apply rules and echo transformed message
   local result = self:apply_rules(sender, target, message, target_type)
@@ -195,7 +195,7 @@ end</script>
 				<packageName></packageName>
 				<script>--note: this shoudl be the last script in order of execution
 function irc:on_sys_install(_, name)
-  if name == "irc" then
+  if name == "irc" or name == "irc_scripts" then
     setIrcServer(self.default_server, self.default_port, self.default_secure)
     setIrcChannels({self.default_channel})    
     self:reset_settings()
