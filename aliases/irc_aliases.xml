@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MudletPackage>
+<MudletPackage version="1.001">
+	<AliasPackage>
+		<AliasGroup isActive="yes" isFolder="yes">
+			<name>irc_aliases</name>
+			<script></script>
+			<command></command>
+			<packageName></packageName>
+			<regex></regex>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_help</name>
+				<script>cecho("===================================================================\n")
+cecho("  IRC COMMANDS:\n")
+cecho("===================================================================\n")
+cecho("  cchat &lt;message&gt;    - IRC chat, 'cc' for short\n")
+cecho("  cnarr &lt;messsage&gt;   - IRC narrate, 'cn' for short\n")
+cecho("  ctell &lt;messsage&gt;   - IRC tell, 'ct' for short\n")
+cecho("  creply &lt;messsage&gt;  - IRC reply, 'cr' for short\n\n")
+
+cecho("  irc nick &lt;name&gt;    - change your nickname\n")
+cecho("  irc join &lt;channel&gt; - change your channel\n")
+cecho("  irc part           - leave your channel\n")
+cecho("  irc names          - list all users in channel\n\n")
+
+cecho("  irc start          - start &amp; enable IRC\n")
+cecho("  irc quit           - exit &amp; disable IRC\n")
+cecho("  irc restart        - restart IRC\n")
+cecho("  irc reset          - reset back to defaults\n\n")
+
+cecho("  irc register &lt;password&gt; &lt;email&gt; - *register your nickname\n")
+cecho("    * first set your desired nickname before registering.\n\n")
+
+cecho("  irc /&lt;command&gt;     - send raw IRC command\n")
+cecho("\n")</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc help$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_command</name>
+				<script>local args = matches[2]:trim()
+if getIrcConnectedHost() then
+  sendIrc("", args)
+else
+  irc:echo("&lt;red&gt;Not connected to IRC")
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc (/.+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_start</name>
+				<script>irc.enabled = true
+irc:save_settings()
+irc:echo("IRC was enabled")
+if not getIrcConnectedHost() then
+  sendIrc("", "")
+  irc:echo("Starting IRC")
+else
+  irc:echo("&lt;red&gt;Already connected to IRC")
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc start$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_quit</name>
+				<script>irc.enabled = false
+irc:save_settings()
+irc:echo("IRC was disabled")
+if getIrcConnectedHost() then
+  sendIrc("", "/quit")  
+  irc:echo("Quitting IRC")
+else
+  irc:echo("&lt;red&gt;Not connected to IRC")
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc quit$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_restart</name>
+				<script>if not restartIrc() then
+  sendIrc("", "")
+end
+irc:echo("Restarting IRC")</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc restart$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_reset</name>
+				<script>irc:reset_settings()
+setIrcServer(irc.default_server, irc.default_port, irc.default_secure)
+setIrcChannels({irc.default_channel})
+irc:echo("Settings were reset.  Type 'irc restart' to reconnect.")</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc reset$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_nick</name>
+				<script>local nick = matches[2]:trim()
+if getIrcConnectedHost() then
+  sendIrc("", f"/nick {nick}")
+end
+setIrcNick(nick)
+irc:echo(f"Nick set to {nick}")
+</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc nick (\S+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_join</name>
+				<script>local join = matches[2]:trim()
+join = not join:match("^[#&amp;]") and f"#{join}" or join
+if getIrcConnectedHost() then
+  for _, channel in ipairs(getIrcChannels()) do
+    sendIrc("", f"/part {channel}")
+  end
+  sendIrc("", f"/join {join}")
+end
+setIrcChannels({join})
+irc:echo(f"Channel set to {join}")</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc join (\S+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_part</name>
+				<script>local channel = getIrcChannels()[1]
+if getIrcConnectedHost() and channel then
+  for _, channel in ipairs(getIrcChannels()) do
+    sendIrc("", f"/part {channel} {password}")
+  end
+elseif not channel then
+  irc:echo("&lt;red&gt;Not connected to channel")
+else
+  irc:echo("&lt;red&gt;Not connected to IRC")
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc part$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_names</name>
+				<script>local channel = getIrcChannels()[1]
+if getIrcConnectedHost() and channel then
+  sendIrc("", f"/names")
+elseif not channel then
+  irc:echo("&lt;red&gt;Not connected to channel")
+else
+  irc:echo("&lt;red&gt;Not connected to IRC")
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc names$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_chat</name>
+				<script>local message = matches[2]:trim()
+local channel = getIrcChannels()[1]
+if getIrcConnectedHost() and channel then
+  sendIrc("", message)
+  irc:echo(f"You chat '{message}'", {"main", "chats"})
+elseif not channel then
+  irc:echo("&lt;red&gt;Not connected to channel", {"main", "chats"})
+else
+  irc:echo("&lt;red&gt;Not connected to IRC", {"main", "chats"})
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^ *(?:irc chat|cc|cch|ccha|cchat) +(.+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_narrate</name>
+				<script>local message = matches[2]:trim()
+local channel = getIrcChannels()[1]
+if getIrcConnectedHost() and channel then
+  sendIrc("", f"/me narrates '{message}'")
+  irc:echo(f"You narrate '{message}'", {"main", "narrates"})
+elseif not channel then
+  irc:echo("&lt;red&gt;Not connected to channel", {"main", "narrates"})
+else
+  irc:echo("&lt;red&gt;Not connected to IRC", {"main", "narrates"})
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^ *(?:irc narr|cn|cna|cnar|cnarr) +(.+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_tell</name>
+				<script>local target = matches[2]:trim()
+local message = matches[3]:trim()
+if getIrcConnectedHost() then
+  sendIrc("", f"/msg {target} {message}")
+  irc:echo(f"&lt;red&gt;You tell {target} '{message}'", {"main", "tells"})
+else
+  irc:echo("&lt;red&gt;Not connected to IRC", {"main", "tells"})
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^ *(?:irc tell|ct|cte|ctel|ctell) +(\S+) (.+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_reply</name>
+				<script>local message = matches[2]:trim()
+if getIrcConnectedHost() and irc.reply_to then
+  sendIrc("", f"/msg {irc.reply_to} {message}")
+  irc:echo(f"&lt;red&gt;You tell {irc.reply_to} '{message}'", {"main", "tells"})
+elseif not irc.reply_to then
+  irc:echo("&lt;red&gt;No one to reply to", {"main", "tells"})
+else
+  irc:echo("&lt;red&gt;Not connected to IRC", {"main", "tells"})
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^ *(?:irc reply|cr|cre|crep|creply) +(.+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_register</name>
+				<script>local args = matches[2]
+if getIrcConnectedHost() and irc.reply_to then
+  sendIrc("", f"/msg nickserv register {args}")
+  irc:echo("Please check your email.\n1. Follow the instructions found inside the email.\n2. Copy and paste the command from the email into mudlet and press Enter.")
+else
+  irc:echo("&lt;red&gt;Not connected to IRC")
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^irc register (.+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_verify_register</name>
+				<script>local command = matches[1]
+if getIrcConnectedHost() and irc.reply_to then
+  sendIrc("", command)
+else
+  irc:echo("&lt;red&gt;Not connected to IRC")
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>(?i)^/msg nickserv verify register .+$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_any</name>
+				<script>irc.gag = false</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>^irc (.+)$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_update</name>
+				<script>if wotpack_installer then
+  wotpack_installer.user = "craigrs84"
+  wotpack_installer.branch = "main"
+  wotpack_installer:download_install("irc", "all")
+end
+
+
+--assumes fname is lowercase and has had any spaces replaced with underscores
+function wotpack_installer:download_install(fname, ftype)
+  if not io.exists(getMudletHomeDir() .. "/wotpack_installer_downloads") then
+    lfs.mkdir(getMudletHomeDir() .. "/wotpack_installer_downloads")
+  end
+  if not io.exists(getMudletHomeDir() .. "/wotpack_installer_downloads/" .. ftype) then
+    lfs.mkdir(getMudletHomeDir() .. "/wotpack_installer_downloads/" .. ftype)
+  end
+  local dname = fname .. "_" .. ftype
+  local path_end = ftype .. "/" .. dname .. ".xml"
+  local url = "https://raw.githubusercontent.com/"..self.user.."/WoTMUD/"..self.branch.."/" .. path_end
+  local saveto = getMudletHomeDir() .. "/wotpack_installer_downloads/" .. path_end
+  self:echo("Downloading updated " .. dname .. "...\n")
+  downloadFile(saveto, url)
+end</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>irc update</regex>
+			</Alias>
+		</AliasGroup>
+	</AliasPackage>
+</MudletPackage>

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MudletPackage>
+<MudletPackage version="1.001">
+	<ScriptPackage>
+		<ScriptGroup isActive="yes" isFolder="yes">
+			<name>irc_scripts</name>
+			<packageName></packageName>
+			<script></script>
+			<eventHandlerList />
+			<Script isActive="yes" isFolder="no">
+				<name>main</name>
+				<packageName></packageName>
+				<script>irc = irc or {}
+irc.gag = irc.gag or false
+irc.reply_to = irc.reply_to or nil
+irc.default_server = "irc.libera.chat"
+irc.default_port = 6697
+irc.default_channel = "#wotlounge"
+irc.default_secure = true
+irc.enabled = irc.enabled or false</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>inbound</name>
+				<packageName></packageName>
+				<script>function irc:on_receive_irc(_, sender, target, message)  
+  if self.debug then
+    self:echo(f"&lt;blue&gt;({target}) {sender}: {message}")
+  end
+  
+  local host = getIrcConnectedHost()
+  local nick = getIrcNick()
+  
+  --Calculate target type
+  local target_type = "nick"
+  if target:match("^[#&amp;]") then
+    target_type = "channel"
+  elseif target:match("[.*]") then
+    target_type = "server"
+  end
+  
+  --Gag when connect starts
+  self.gag = self.gag or (target_type == "server" and message == "*** Checking Ident")
+  
+  --Apply rules and echo transformed message
+  local result = self:apply_rules(sender, target, message, target_type)
+  if result then
+    self:echo(result.message, result.targets)
+  end
+  
+  --Ungag after joining channel
+  self.gag = self.gag and not (target_type == "channel" and message:match("^! %S+ has %d+ users:"))
+      
+  --Capture sender/reply to
+  self.reply_to = target == nick and sender or self.reply_to  
+end</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>rules</name>
+				<packageName></packageName>
+				<script>function irc:apply_rules(sender, target, message, target_type)  
+  local rules
+  if target_type == "server" then
+    rules = {
+      exclusions = {},
+      inclusions = {
+        {patt = "^%[ERROR%]", repl = "&lt;red&gt;%0", targets = {"main", "misc"}},
+        {patt = "^[!*] (.+)$", repl = "%1", targets = {"main", "misc"}},
+        {patt = "^.*$", repl = f"%0", targets = {"main", "misc"}}
+      }
+    }
+  elseif target_type == "nick" then
+    rules = {
+      exclusions = {},
+      inclusions = {
+        {patt = "^Your nick has changed.$", repl = f"Your nick has changed to {target}.", targets = {"main", "misc"}},
+        {patt = "^%* (%S+ tells you '.+')$", repl = "&lt;red&gt;%1", targets = {"main", "tells"}},
+        {patt = "^[!*] (.+)$", repl = "&lt;red&gt;%1", targets = {"main", "tells"}},
+        {patt = "^.*$", repl = f"&lt;red&gt;{sender} tells you '%0'", targets = {"main", "tells"}}
+      }
+    }
+  elseif target_type == "channel" then
+    rules = {
+      exclusions = {},
+      inclusions = {
+        {patt = "^%* (%S+ narrates '.+')$", repl = "%1", targets = {"main", "narrates"}},
+        {patt = "^%* (%S+ chats '.+')$", repl = "%1", targets = {"main", "chats"}},
+        {patt = "^[!*] (.+)$", repl = "%1", targets = {"main", "chats"}},
+        {patt = "^.*$", repl = f"{sender} chats '%0'", targets = {"main", "chats"}}
+      }
+    }
+  end
+  
+  if self.gag then  
+    table.insert(rules.exclusions, {patt = "^%*%*%*"})
+    table.insert(rules.exclusions, {patt = "^%[INFO%]"})
+    table.insert(rules.exclusions, {patt = "^%[MOTD%]"})
+    for _, inclusion in ipairs(rules.inclusions) do
+      inclusion.targets = table.n_complement(inclusion.targets, {"main"})
+    end
+  end
+  
+  local exclude = nil
+  if rules.exclusions then
+    for _, exclusion in ipairs(rules.exclusions) do
+      if message:match(exclusion.patt) then
+        exclude = exclusion
+        break
+      end
+    end
+  end
+  
+  local include = nil
+  if rules.inclusions and not exclude then
+    for _, inclusion in ipairs(rules.inclusions) do
+      if message:match(inclusion.patt) then
+        include = inclusion
+        break
+      end
+    end
+  end
+  
+  if include then
+    message = message:gsub(include.patt, include.repl)
+    message = message:gsub(getIrcConnectedHost() or getIrcServer(), "Server")
+    return {
+      message = message,
+      targets = include.targets
+    }
+  end
+  
+  return nil
+end</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>console</name>
+				<packageName></packageName>
+				<script>function irc:echo(message, targets)
+  targets = targets or {"main", "misc"}
+  local all_tabs = {"all", "narrates", "chats", "tells", "says", "yells", "misc"}    
+  
+  local wins = table.n_complement(targets, all_tabs)
+  for _, win in ipairs(wins) do
+    cecho(win, f"\n&lt;orange&gt;{message} [irc]\n")
+  end
+  
+  local tabs = table.n_intersection(targets, all_tabs)
+  if not table.is_empty(tabs) then
+    local time = getTime(true, "HH:mm")
+    for _, tab in ipairs(table.n_union(tabs, {"all"})) do
+      cecho(f"communications.{tab:title()}", f"{time} &lt;orange&gt;{message} [irc]\n")
+    end
+  end
+end</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>settings</name>
+				<packageName></packageName>
+				<script>function irc:load_settings()
+  local result = nil
+  local path = getMudletHomeDir() .. "/irc.json"
+  if io.exists(path) then
+    local file = io.open(path, "r")
+    result = yajl.to_value(file:read("*all"))
+    io.close(file)
+  end
+  if result and tonumber(result.revision) == 1 then
+    self.enabled = result.enabled
+  else
+    self:reset_settings()
+  end
+end
+
+function irc:save_settings()
+  local path = getMudletHomeDir() .. "/irc.json"    
+  local file = io.open(path, "w")
+  file:write(yajl.to_string({
+    revision = 1,
+    enabled = self.enabled
+  }))
+  io.close(file)
+end
+
+function irc:reset_settings()
+  self.enabled = true
+  self:save_settings()
+end</script>
+				<eventHandlerList />
+			</Script>
+			<Script isActive="yes" isFolder="no">
+				<name>events</name>
+				<packageName></packageName>
+				<script>--note: this shoudl be the last script in order of execution
+function irc:on_sys_install(_, name)
+  if name == "irc" then
+    setIrcServer(self.default_server, self.default_port, self.default_secure)
+    setIrcChannels({self.default_channel})    
+    self:reset_settings()
+    self:echo(f"IRC is {self.enabled and 'enabled' or 'disabled'}")
+    if self.enabled then
+      sendIrc("", "")
+    end
+  end
+end
+
+function irc:on_sys_load()
+  self:load_settings()
+  self:echo(f"IRC is {self.enabled and 'enabled' or 'disabled'}")
+  if self.enabled then
+    sendIrc("", "")
+  end
+end
+
+function irc:on_connect()
+  if self.enabled and getIrcConnectedHost() then
+    restartIrc()
+    self:echo("Restarting IRC")
+  end
+end
+
+registerAnonymousEventHandler("sysInstallPackage", "irc:on_sys_install")
+registerAnonymousEventHandler("sysLoadEvent", "irc:on_sys_load")
+registerAnonymousEventHandler("sysConnectionEvent", "irc:on_connect")
+registerAnonymousEventHandler("sysIrcMessage", "irc:on_receive_irc")</script>
+				<eventHandlerList />
+			</Script>
+		</ScriptGroup>
+	</ScriptPackage>
+</MudletPackage>
