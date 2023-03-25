@@ -270,22 +270,12 @@ end</script>
     wotpack_installer.user = wotpack_installer._prev_user
     wotpack_installer.branch = wotpack_installer._prev_branch 
     wotpack_installer.aliases = wotpack_installer._prev_aliases
-    wotpack_installer.aliases = wotpack_installer._prev_scripts
+    wotpack_installer.scripts = wotpack_installer._prev_scripts
   end)
 end</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^irc update$</regex>
-			</Alias>
-			<Alias isActive="yes" isFolder="no">
-				<name>irc_uninstall</name>
-				<script>uninstallPackage("irc_aliases")
-uninstallPackage("irc_scripts")
-cecho("Uninstalled.\n")
-</script>
-				<command></command>
-				<packageName></packageName>
-				<regex>^irc uninstall$</regex>
 			</Alias>
 		</AliasGroup>
 	</AliasPackage>

@@ -40,7 +40,7 @@ irc.enabled = irc.enabled or false</script>
   end
   
   --Gag when connect starts
-  self.gag = self.gag or (target_type == "server" and message:match("^***"))
+  self.gag = self.gag or (not host or (target_type == "server" and message:match("^***")))
   
   --Apply rules and echo transformed message
   local result = self:apply_rules(sender, target, message, target_type)
