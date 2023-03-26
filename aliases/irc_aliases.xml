@@ -164,7 +164,7 @@ end</script>
 local channel = getIrcChannels()[1]
 if getIrcConnectedHost() and channel then
   sendIrc("", message)
-  irc:echo(f"You irc chat '{message}'", {"main", "chats", "narrates"})
+  irc:echo(f"You chat '{message}' (irc)", {"main", "chats", "narrates"})
 elseif not channel then
   irc:echo("&lt;red&gt;Not connected to channel", {"main", "chats", "narrates"})
 else
@@ -180,7 +180,7 @@ end</script>
 local message = matches[3]:trim()
 if getIrcConnectedHost() then
   sendIrc("", f"/msg {target} {message}")
-  irc:echo(f"&lt;red&gt;You tell {target} '{message}'", {"main", "tells"})
+  irc:echo(f"&lt;red&gt;You tell {target} '{message}' (irc)", {"main", "tells"})
 else
   irc:echo("&lt;red&gt;Not connected to IRC", {"main", "tells"})
 end</script>
@@ -193,7 +193,7 @@ end</script>
 				<script>local message = matches[2]:trim()
 if getIrcConnectedHost() and irc.reply_to then
   sendIrc("", f"/msg {irc.reply_to} {message}")
-  irc:echo(f"&lt;red&gt;You tell {irc.reply_to} '{message}'", {"main", "tells"})
+  irc:echo(f"&lt;red&gt;You tell {irc.reply_to} '{message}' (irc)", {"main", "tells"})
 elseif not irc.reply_to then
   irc:echo("&lt;red&gt;No one to reply to", {"main", "tells"})
 else
@@ -229,13 +229,6 @@ end</script>
 				<regex>(?i)^/msg nickserv verify register .+$</regex>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
-				<name>irc_any</name>
-				<script>irc.gag = false</script>
-				<command></command>
-				<packageName></packageName>
-				<regex>^irc (.+)$</regex>
-			</Alias>
-			<Alias isActive="yes" isFolder="no">
 				<name>irc_update</name>
 				<script>if wotpack_installer then
   wotpack_installer._prev_user = wotpack_installer._prev_user or wotpack_installer.user
@@ -260,6 +253,33 @@ end</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^irc update$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_test</name>
+				<script>irc:on_receive_irc(nil, "nick", ".", "[ERROR] message")
+irc:on_receive_irc(nil, "nick", ".", "* nick smiles happily")
+irc:on_receive_irc(nil, "nick", ".", "hello world")
+
+irc:on_receive_irc(nil, "from_nick", "to_nick", "Your nick has changed.")
+irc:on_receive_irc(nil, "from_nick", "to_nick", "* from_nick smiles happily")
+irc:on_receive_irc(nil, "from_nick", "to_nick", "hello world")
+
+irc:on_receive_irc(nil, "wotdiscord", "#channel", "* wotdiscord nick: smiles happily")
+irc:on_receive_irc(nil, "wotdiscord", "#channel", "nick: hello world")
+irc:on_receive_irc(nil, "wotdiscord", "#channel", "hello world")
+
+irc:on_receive_irc(nil, "nick", "#channel", "* nick smiles happily")
+irc:on_receive_irc(nil, "nick", "#channel", "hello world")</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>^irc test$</regex>
+			</Alias>
+			<Alias isActive="yes" isFolder="no">
+				<name>irc_any</name>
+				<script>irc.gag = false</script>
+				<command></command>
+				<packageName></packageName>
+				<regex>^irc (.+)$</regex>
 			</Alias>
 		</AliasGroup>
 	</AliasPackage>

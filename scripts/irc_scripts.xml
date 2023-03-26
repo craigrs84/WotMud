@@ -40,7 +40,8 @@ irc.enabled = irc.enabled or false</script>
   end
   
   --Gag when connect starts
-  self.gag = self.gag or (not host or (target_type == "server" and message:match("^***")))
+  local starting = not host or (target_type == "server" and message:match("^%*%*%*"))
+  self.gag = self.gag or starting
   
   --Apply rules and echo transformed message
   local result = self:apply_rules(sender, target, message, target_type)
@@ -49,8 +50,9 @@ irc.enabled = irc.enabled or false</script>
   end
   
   --Ungag after joining channel
-  self.gag = self.gag and not (host and target_type == "channel" and message:match("^! %S+ has %d+ users:"))
-      
+  local ending = host and target_type == "channel" and message:match("^! %S+ has %d+ users:")
+  self.gag = self.gag and not ending
+  
   --Capture sender/reply to
   self.reply_to = target == nick and sender or self.reply_to  
 end</script>
@@ -61,15 +63,7 @@ end</script>
 				<packageName></packageName>
 				<script>function irc:apply_rules(sender, target, message, target_type)  
   local rules
-  if sender == "wotdiscord" then
-    rules = {
-      exclusions = {},
-      inclusions = {
-        {patt = "^[!*] wotdiscord ([^:]+): (.+)$", repl = "%1 %2 [discord]", targets = {"main", "chats", "narrates"}},
-        {patt = "^([^:]+): (.+)$", repl = "%1 discord chats '%2'", targets = {"main", "chats", "narrates"}}
-      }
-    }
-  elseif target_type == "server" then
+  if target_type == "server" then
     rules = {
       exclusions = {},
       inclusions = {
@@ -83,18 +77,29 @@ end</script>
       exclusions = {},
       inclusions = {
         {patt = "^Your nick has changed.$", repl = f"Your nick has changed to {target}.", targets = {"main", "misc"}},
-        {patt = "^[!*] (.+)$", repl = "&lt;red&gt;%1 [irc]", targets = {"main", "tells"}},
-        {patt = "^.*$", repl = f"&lt;red&gt;{sender} irc tells you '%0'", targets = {"main", "tells"}}
+        {patt = "^[!*] (.+)$", repl = "&lt;red&gt;%1 (irc)", targets = {"main", "tells"}},
+        {patt = "^.*$", repl = f"&lt;red&gt;{sender} tells you '%0' (irc)", targets = {"main", "tells"}}
       }
     }
   elseif target_type == "channel" then
-    rules = {
-      exclusions = {},
-      inclusions = {
-        {patt = "^[!*] (.+)$", repl = "%1 [irc]", targets = {"main", "chats", "narrates"}},
-        {patt = "^.*$", repl = f"{sender} irc chats '%0'", targets = {"main", "chats", "narrates"}}
+    if sender == "wotdiscord" then
+      rules = {
+        exclusions = {},
+        inclusions = {
+          {patt = "^[!*] wotdiscord ([^:]+): (.+)$", repl = "%1 %2 (discord)", targets = {"main", "chats", "narrates"}},
+          {patt = "^([^:]+): (.+)$", repl = "%1 chats '%2' (discord)", targets = {"main", "chats", "narrates"}},
+          {patt = "^.*$", repl = f"{sender} chats '%0' (discord)", targets = {"main", "chats", "narrates"}}
+        }
       }
-    }
+    else
+      rules = {
+        exclusions = {},
+        inclusions = {
+          {patt = "^[!*] (.+)$", repl = "%1 (irc)", targets = {"main", "chats", "narrates"}},
+          {patt = "^.*$", repl = f"{sender} chats '%0' (irc)", targets = {"main", "chats", "narrates"}}
+        }
+      }
+    end
   end
   
   if self.gag then  
@@ -219,16 +224,8 @@ function irc:on_sys_load()
   end
 end
 
---function irc:on_connect()
-  --if self.enabled and getIrcConnectedHost() then
-    --restartIrc()
-    --self:echo("Restarting IRC")
-  --end
---end
-
 registerAnonymousEventHandler("sysInstallPackage", "irc:on_sys_install")
 registerAnonymousEventHandler("sysLoadEvent", "irc:on_sys_load")
---registerAnonymousEventHandler("sysConnectionEvent", "irc:on_connect")
 registerAnonymousEventHandler("sysIrcMessage", "irc:on_receive_irc")</script>
 				<eventHandlerList />
 			</Script>
