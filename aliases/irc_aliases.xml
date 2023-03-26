@@ -164,31 +164,15 @@ end</script>
 local channel = getIrcChannels()[1]
 if getIrcConnectedHost() and channel then
   sendIrc("", message)
-  irc:echo(f"You chat '{message}'", {"main", "chats"})
+  irc:echo(f"You irc chat '{message}'", {"main", "chats", "narrates"})
 elseif not channel then
-  irc:echo("&lt;red&gt;Not connected to channel", {"main", "chats"})
+  irc:echo("&lt;red&gt;Not connected to channel", {"main", "chats", "narrates"})
 else
-  irc:echo("&lt;red&gt;Not connected to IRC", {"main", "chats"})
+  irc:echo("&lt;red&gt;Not connected to IRC", {"main", "chats", "narrates"})
 end</script>
 				<command></command>
 				<packageName></packageName>
-				<regex>(?i)^ *(?:irc chat|cc|cch|ccha|cchat) +(.+)$</regex>
-			</Alias>
-			<Alias isActive="yes" isFolder="no">
-				<name>irc_narrate</name>
-				<script>local message = matches[2]:trim()
-local channel = getIrcChannels()[1]
-if getIrcConnectedHost() and channel then
-  sendIrc("", f"/me narrates '{message}'")
-  irc:echo(f"You narrate '{message}'", {"main", "narrates"})
-elseif not channel then
-  irc:echo("&lt;red&gt;Not connected to channel", {"main", "narrates"})
-else
-  irc:echo("&lt;red&gt;Not connected to IRC", {"main", "narrates"})
-end</script>
-				<command></command>
-				<packageName></packageName>
-				<regex>(?i)^ *(?:irc narr|cn|cna|cnar|cnarr) +(.+)$</regex>
+				<regex>(?i)^ *(?:irc chat|cc|cch|ccha|cchat|cn|cna|cnar|cnarr) +(.+)$</regex>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
 				<name>irc_tell</name>
