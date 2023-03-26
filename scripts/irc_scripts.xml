@@ -139,18 +139,27 @@ end</script>
 				<packageName></packageName>
 				<script>function irc:echo(message, targets)
   targets = targets or {"main", "misc"}
-  local all_tabs = {"all", "narrates", "chats", "tells", "says", "yells", "misc"}    
+  local all_tabs = {"all", "narrates", "chats", "tells", "says", "yells", "misc"}      
+  local discord_nick, discord_message = message:match("^wotdiscord chats '(%S+): (.+)'$")
   
   local wins = table.n_complement(targets, all_tabs)
   for _, win in ipairs(wins) do
-    cecho(win, f"\n&lt;orange&gt;{message} [irc]\n")
+    if discord_nick then
+      cecho(win, f"\n&lt;orange&gt;{discord_nick} chats '{discord_message}' [discord]\n")      
+    else
+      cecho(win, f"\n&lt;orange&gt;{message} [irc]\n")
+    end
   end
   
   local tabs = table.n_intersection(targets, all_tabs)
   if not table.is_empty(tabs) then
     local time = getTime(true, "HH:mm")
     for _, tab in ipairs(table.n_union(tabs, {"all"})) do
-      cecho(f"communications.{tab:title()}", f"{time} &lt;orange&gt;{message} [irc]\n")
+      if discord_nick then
+        cecho(f"communications.{tab:title()}", f"{time} &lt;orange&gt;{discord_nick} chats '{discord_message}' [discord]\n")        
+      else      
+        cecho(f"communications.{tab:title()}", f"{time} &lt;orange&gt;{message} [irc]\n")
+      end
     end
   end
 end</script>
