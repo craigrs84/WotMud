@@ -89,8 +89,8 @@ end</script>
       exclusions = {},
       inclusions = {
         {patt = "^Your nick has changed.$", repl = f"Your nick has changed to {target}.", targets = {"main", "misc"}},
-        {patt = "^%[NickServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "tells"}},
-        {patt = "^%[ChanServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "tells"}},
+        {patt = "^%[NickServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "misc"}},
+        {patt = "^%[ChanServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "misc"}},
         {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
         {patt = "^* (.+)$", repl = f"&lt;{self.tell_color}&gt;%1 {self.irc_tag}", targets = {"main", "tells"}},
         {patt = "^.*$", repl = f"&lt;{self.tell_color}&gt;{sender} tells you '%0' {self.irc_tag}", targets = {"main", "tells"}}
@@ -111,7 +111,7 @@ end</script>
       rules = {
         exclusions = {},
         inclusions = {
-          {patt = "^%[TOPIC%] .+$", repl = f"&lt;{self.topic_color}&gt;%0", targets = {"main", "chats", "narrates"}},
+          {patt = "^%[TOPIC%] .+$", repl = f"&lt;{self.topic_color}&gt;%0", targets = {"main", "misc"}},
           {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
           {patt = "^* (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 {self.irc_tag}", targets = {"main", "chats", "narrates"}},
           {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} chats '%0' {self.irc_tag}", targets = {"main", "chats", "narrates"}}
