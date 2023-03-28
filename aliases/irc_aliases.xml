@@ -164,7 +164,7 @@ end</script>
 local channel = getIrcChannels()[1]
 if getIrcConnectedHost() and channel then
   sendIrc("", message)
-  irc:echo(f"You chat '{message}' (irc)", {"main", "chats", "narrates"})
+  irc:echo(f"&lt;{irc.chat_color}&gt;You chat '{message}' {irc.irc_tag}", {"main", "chats", "narrates"})
 elseif not channel then
   irc:echo("&lt;red&gt;Not connected to channel", {"main", "chats", "narrates"})
 else
@@ -180,7 +180,7 @@ end</script>
 local message = matches[3]:trim()
 if getIrcConnectedHost() then
   sendIrc("", f"/msg {target} {message}")
-  irc:echo(f"&lt;red&gt;You tell {target} '{message}' (irc)", {"main", "tells"})
+  irc:echo(f"&lt;{irc.tell_color}&gt;You tell {target} '{message}' {irc.irc_tag}", {"main", "tells"})
 else
   irc:echo("&lt;red&gt;Not connected to IRC", {"main", "tells"})
 end</script>
@@ -193,9 +193,9 @@ end</script>
 				<script>local message = matches[2]:trim()
 if getIrcConnectedHost() and irc.reply_to then
   sendIrc("", f"/msg {irc.reply_to} {message}")
-  irc:echo(f"&lt;red&gt;You tell {irc.reply_to} '{message}' (irc)", {"main", "tells"})
+  irc:echo(f"&lt;{irc.tell_color}&gt;You tell {irc.reply_to} '{message}' {irc.irc_tag}", {"main", "tells"})
 elseif not irc.reply_to then
-  irc:echo("&lt;red&gt;No one to reply to", {"main", "tells"})
+  irc:echo(f"&lt;{irc.tell_color}&gt;No one to reply to {irc.irc_tag}", {"main", "tells"})
 else
   irc:echo("&lt;red&gt;Not connected to IRC", {"main", "tells"})
 end</script>
@@ -256,20 +256,20 @@ end</script>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
 				<name>irc_test</name>
-				<script>irc:on_receive_irc(nil, "nick", ".", "[ERROR] message")
-irc:on_receive_irc(nil, "nick", ".", "* nick smiles happily")
-irc:on_receive_irc(nil, "nick", ".", "hello world")
+				<script>irc:on_receive_irc(nil, "Nick", ".", "[ERROR] message")
+irc:on_receive_irc(nil, "Nick", ".", "* Nick smiles happily")
+irc:on_receive_irc(nil, "Nick", ".", "hello world")
 
-irc:on_receive_irc(nil, "from_nick", "to_nick", "Your nick has changed.")
-irc:on_receive_irc(nil, "from_nick", "to_nick", "* from_nick smiles happily")
-irc:on_receive_irc(nil, "from_nick", "to_nick", "hello world")
+irc:on_receive_irc(nil, "Nick", "ToNick", "Your nick has changed.")
+irc:on_receive_irc(nil, "Nick", "ToNick", "* Nick smiles happily")
+irc:on_receive_irc(nil, "Nick", "ToNick", "hello world")
 
-irc:on_receive_irc(nil, "wotdiscord", "#channel", "* wotdiscord nick: smiles happily")
-irc:on_receive_irc(nil, "wotdiscord", "#channel", "nick: hello world")
+irc:on_receive_irc(nil, "wotdiscord", "#channel", "* wotdiscord Nick: smiles happily")
+irc:on_receive_irc(nil, "wotdiscord", "#channel", "Nick: hello world")
 irc:on_receive_irc(nil, "wotdiscord", "#channel", "hello world")
 
-irc:on_receive_irc(nil, "nick", "#channel", "* nick smiles happily")
-irc:on_receive_irc(nil, "nick", "#channel", "hello world")</script>
+irc:on_receive_irc(nil, "Nick", "#channel", "* Nick smiles happily")
+irc:on_receive_irc(nil, "Nick", "#channel", "hello world")</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^irc test$</regex>

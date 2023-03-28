@@ -11,22 +11,32 @@
 				<name>main</name>
 				<packageName></packageName>
 				<script>irc = irc or {}
+irc.enabled = irc.enabled or false
 irc.gag = irc.gag or false
 irc.reply_to = irc.reply_to or nil
 irc.default_server = "irc.libera.chat"
 irc.default_port = 6697
 irc.default_channel = "#wotlounge"
 irc.default_secure = true
-irc.enabled = irc.enabled or false</script>
+irc.default_color = "orange"
+irc.topic_color = "turquoise"
+irc.chat_color = "orange"
+irc.tell_color = "red"
+irc.muted_color = closestColor("#555555")
+irc.irc_tag = f" &lt;{irc.muted_color}&gt;&lt;i&gt;-irc&lt;/i&gt;"
+irc.discord_tag = f" &lt;{irc.muted_color}&gt;&lt;i&gt;-discord&lt;/i&gt;"</script>
 				<eventHandlerList />
 			</Script>
 			<Script isActive="yes" isFolder="no">
 				<name>inbound</name>
 				<packageName></packageName>
-				<script>function irc:on_receive_irc(_, sender, target, message)  
+				<script>function irc:on_receive_irc(_, sender, target, message)
   if self.debug then
     self:echo(f"&lt;blue&gt;({target}) {sender}: {message}")
   end
+  
+  --Fix IRC bug
+  message = message:gsub("&amp;lt;", "&lt;")
   
   local host = getIrcConnectedHost()
   local nick = getIrcNick()
@@ -67,8 +77,10 @@ end</script>
     rules = {
       exclusions = {},
       inclusions = {
-        {patt = "^%[ERROR%]", repl = "&lt;red&gt;%0", targets = {"main", "misc"}},
-        {patt = "^[!*] (.+)$", repl = "%1", targets = {"main", "misc"}},
+        {patt = "^%[ERROR%]", repl = f"&lt;red&gt;%0", targets = {"main", "misc"}},
+        {patt = "^%[900%] .+ (You are now logged in as %S+)", repl = "%1", targets = {"main", "misc"}},    
+        {patt = "^! (.+)$", repl = "%1", targets = {"main", "misc"}},
+        {patt = "^* (.+)$", repl = "%1", targets = {"main", "misc"}},
         {patt = "^.*$", repl = f"%0", targets = {"main", "misc"}}
       }
     }
@@ -77,8 +89,11 @@ end</script>
       exclusions = {},
       inclusions = {
         {patt = "^Your nick has changed.$", repl = f"Your nick has changed to {target}.", targets = {"main", "misc"}},
-        {patt = "^[!*] (.+)$", repl = "&lt;red&gt;%1 (irc)", targets = {"main", "tells"}},
-        {patt = "^.*$", repl = f"&lt;red&gt;{sender} tells you '%0' (irc)", targets = {"main", "tells"}}
+        {patt = "^%[NickServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "tells"}},
+        {patt = "^%[ChanServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "tells"}},
+        {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
+        {patt = "^* (.+)$", repl = f"&lt;{self.tell_color}&gt;%1 {self.irc_tag}", targets = {"main", "tells"}},
+        {patt = "^.*$", repl = f"&lt;{self.tell_color}&gt;{sender} tells you '%0' {self.irc_tag}", targets = {"main", "tells"}}
       }
     }
   elseif target_type == "channel" then
@@ -86,17 +101,20 @@ end</script>
       rules = {
         exclusions = {},
         inclusions = {
-          {patt = "^[!*] wotdiscord ([^:]+): (.+)$", repl = "%1 %2 (discord)", targets = {"main", "chats", "narrates"}},
-          {patt = "^([^:]+): (.+)$", repl = "%1 chats '%2' (discord)", targets = {"main", "chats", "narrates"}},
-          {patt = "^.*$", repl = f"{sender} chats '%0' (discord)", targets = {"main", "chats", "narrates"}}
+          {patt = f"^! {sender} ([^:]+): (.+)$", repl = f"%1 %2", targets = {"main", "misc"}},
+          {patt = f"^* {sender} ([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 %2 {self.discord_tag}", targets = {"main", "chats", "narrates"}},
+          {patt = "^([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 chats '%2' {self.discord_tag}", targets = {"main", "chats", "narrates"}},
+          {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} chats '%0' {self.discord_tag}", targets = {"main", "chats", "narrates"}}
         }
       }
     else
       rules = {
         exclusions = {},
         inclusions = {
-          {patt = "^[!*] (.+)$", repl = "%1 (irc)", targets = {"main", "chats", "narrates"}},
-          {patt = "^.*$", repl = f"{sender} chats '%0' (irc)", targets = {"main", "chats", "narrates"}}
+          {patt = "^%[TOPIC%] .+$", repl = f"&lt;{self.topic_color}&gt;%0", targets = {"main", "chats", "narrates"}},
+          {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
+          {patt = "^* (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 {self.irc_tag}", targets = {"main", "chats", "narrates"}},
+          {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} chats '%0' {self.irc_tag}", targets = {"main", "chats", "narrates"}}
         }
       }
     end
@@ -106,6 +124,11 @@ end</script>
     table.insert(rules.exclusions, {patt = "^%*%*%*"})
     table.insert(rules.exclusions, {patt = "^%[INFO%]"})
     table.insert(rules.exclusions, {patt = "^%[MOTD%]"})
+    table.insert(rules.exclusions, {patt = "^%[NickServ%] This nickname is registered%. Please choose a different nickname, or identify via /msg NickServ IDENTIFY %S+ &lt;password&gt;$"})
+    table.insert(rules.exclusions, {patt = "^%[NickServ%] You have 30 seconds to identify to your nickname before it is changed%.$"})
+    table.insert(rules.exclusions, {patt = "^%[NickServ] You are now identified for %S+%.$"})
+    table.insert(rules.exclusions, {patt = "^%[NickServ] Last login from: .+$"})
+    table.insert(rules.exclusions, {patt = "^%[396%] user/%S+ is now your hidden host %(set by services.%)$"})
     for _, inclusion in ipairs(rules.inclusions) do
       inclusion.targets = table.n_complement(inclusion.targets, {"main"})
     end
@@ -153,14 +176,14 @@ end</script>
   
   local wins = table.n_complement(targets, all_tabs)
   for _, win in ipairs(wins) do
-    cecho(win, f"\n&lt;orange&gt;{message}\n")
+    cecho(win, f"\n&lt;{self.default_color}&gt;{message}\n")
   end
   
   local tabs = table.n_intersection(targets, all_tabs)
   if not table.is_empty(tabs) then
     local time = getTime(true, "HH:mm")
     for _, tab in ipairs(table.n_union(tabs, {"all"})) do
-      cecho(f"communications.{tab:title()}", f"{time} &lt;orange&gt;{message}\n")
+      cecho(f"communications.{tab:title()}", f"{time} &lt;{self.default_color}&gt;{message}\n")
     end
   end
 end</script>
@@ -203,13 +226,13 @@ end</script>
 			<Script isActive="yes" isFolder="no">
 				<name>events</name>
 				<packageName></packageName>
-				<script>--note: this shoudl be the last script in order of execution
+				<script>--note: this should be the last script in order of execution
 function irc:on_sys_install(_, name)
   if name == "irc" or name == "irc_scripts" then
     setIrcServer(self.default_server, self.default_port, self.default_secure)
     setIrcChannels({self.default_channel})
     self:reset_settings()
-    self:echo(f"IRC is {self.enabled and 'enabled' or 'disabled'}")
+    self:echo(f"IRC is {self.enabled and 'starting...' or 'disabled'}")
     if self.enabled then
       sendIrc("", "")
     end
@@ -218,7 +241,7 @@ end
 
 function irc:on_sys_load()
   self:load_settings()
-  self:echo(f"IRC is {self.enabled and 'enabled' or 'disabled'}")
+  self:echo(f"IRC is {self.enabled and 'starting...' or 'disabled'}")
   if self.enabled then
     sendIrc("", "")
   end
