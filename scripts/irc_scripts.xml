@@ -23,8 +23,8 @@ irc.topic_color = "turquoise"
 irc.chat_color = "orange"
 irc.tell_color = "red"
 irc.muted_color = closestColor("#555555")
-irc.irc_tag = f" &lt;{irc.muted_color}&gt;&lt;i&gt;-irc&lt;/i&gt;"
-irc.discord_tag = f" &lt;{irc.muted_color}&gt;&lt;i&gt;-discord&lt;/i&gt;"</script>
+irc.irc_tag = ""
+irc.discord_tag = f"&lt;{irc.muted_color}&gt;&lt;i&gt;-discord&lt;/i&gt;"</script>
 				<eventHandlerList />
 			</Script>
 			<Script isActive="yes" isFolder="no">
@@ -80,7 +80,7 @@ end</script>
         {patt = "^%[ERROR%]", repl = f"&lt;red&gt;%0", targets = {"main", "misc"}},
         {patt = "^%[900%] .+ (You are now logged in as %S+)", repl = "%1", targets = {"main", "misc"}},    
         {patt = "^! (.+)$", repl = "%1", targets = {"main", "misc"}},
-        {patt = "^* (.+)$", repl = "%1", targets = {"main", "misc"}},
+        {patt = "^%* (.+)$", repl = "%1", targets = {"main", "misc"}},
         {patt = "^.*$", repl = f"%0", targets = {"main", "misc"}}
       }
     }
@@ -92,7 +92,7 @@ end</script>
         {patt = "^%[NickServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "misc"}},
         {patt = "^%[ChanServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "misc"}},
         {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
-        {patt = "^* (.+)$", repl = f"&lt;{self.tell_color}&gt;%1 {self.irc_tag}", targets = {"main", "tells"}},
+        {patt = "^%* (.+)$", repl = f"&lt;{self.tell_color}&gt;%1 {self.irc_tag}", targets = {"main", "tells"}},
         {patt = "^.*$", repl = f"&lt;{self.tell_color}&gt;{sender} tells you '%0' {self.irc_tag}", targets = {"main", "tells"}}
       }
     }
@@ -102,7 +102,9 @@ end</script>
         exclusions = {},
         inclusions = {
           {patt = f"^! {sender} ([^:]+): (.+)$", repl = f"%1 %2", targets = {"main", "misc"}},
-          {patt = f"^* {sender} ([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 %2 {self.discord_tag}", targets = {"main", "chats", "narrates"}},
+          {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
+          {patt = f"^%* {sender} ([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 %2 {self.discord_tag}", targets = {"main", "chats", "narrates"}},
+          {patt = f"^%* (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 {self.discord_tag}", targets = {"main", "chats", "narrates"}},          
           {patt = "^([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 chats '%2' {self.discord_tag}", targets = {"main", "chats", "narrates"}},
           {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} chats '%0' {self.discord_tag}", targets = {"main", "chats", "narrates"}}
         }
@@ -113,7 +115,7 @@ end</script>
         inclusions = {
           {patt = "^%[TOPIC%] .+$", repl = f"&lt;{self.topic_color}&gt;%0", targets = {"main", "misc"}},
           {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
-          {patt = "^* (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 {self.irc_tag}", targets = {"main", "chats", "narrates"}},
+          {patt = "^%* (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 {self.irc_tag}", targets = {"main", "chats", "narrates"}},
           {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} chats '%0' {self.irc_tag}", targets = {"main", "chats", "narrates"}}
         }
       }

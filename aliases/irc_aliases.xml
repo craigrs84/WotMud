@@ -267,9 +267,11 @@ irc:on_receive_irc(nil, "Nick", "ToNick", "hello world")
 irc:on_receive_irc(nil, "wotdiscord", "#channel", "* wotdiscord Nick: smiles happily")
 irc:on_receive_irc(nil, "wotdiscord", "#channel", "Nick: hello world")
 irc:on_receive_irc(nil, "wotdiscord", "#channel", "hello world")
+irc:on_receive_irc(nil, "wotdiscord", "#channel", "! wotdiscord has quit (Remote host closed the connection)")
 
 irc:on_receive_irc(nil, "Nick", "#channel", "* Nick smiles happily")
-irc:on_receive_irc(nil, "Nick", "#channel", "hello world")</script>
+irc:on_receive_irc(nil, "Nick", "#channel", "hello world")
+</script>
 				<command></command>
 				<packageName></packageName>
 				<regex>^irc test$</regex>
