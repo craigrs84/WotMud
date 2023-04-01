@@ -73,53 +73,43 @@ end</script>
 				<packageName></packageName>
 				<script>function irc:apply_rules(sender, target, message, target_type)  
   local rules
+  local tag = sender == "wotdiscord" and self.discord_tag or self.irc_tag
   if target_type == "server" then
     rules = {
       exclusions = {},
       inclusions = {
-        {patt = "^%[ERROR%]", repl = f"&lt;red&gt;%0", targets = {"main", "misc"}},
-        {patt = "^%[900%] .+ (You are now logged in as %S+)", repl = "%1", targets = {"main", "misc"}},    
-        {patt = "^! (.+)$", repl = "%1", targets = {"main", "misc"}},
-        {patt = "^%* (.+)$", repl = "%1", targets = {"main", "misc"}},
-        {patt = "^.*$", repl = f"%0", targets = {"main", "misc"}}
+        {patt = "^%[ERROR%]", repl = f"&lt;red&gt;%0", targets={"main", "misc"}},
+        {patt = "^%[900%] .+ (You are now logged in as %S+)", repl = "%1", targets={"main", "misc"}},
+        {patt = "^! (.+)$", repl = "%1", targets={"main", "misc"}},
+        {patt = "^%* (.+)$", repl = "%1", targets={"main", "misc"}},
+        {patt = "^.*$", repl = f"%0", targets={"main", "misc"}}
       }
     }
   elseif target_type == "nick" then
     rules = {
       exclusions = {},
       inclusions = {
-        {patt = "^Your nick has changed.$", repl = f"Your nick has changed to {target}.", targets = {"main", "misc"}},
-        {patt = "^%[NickServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "misc"}},
-        {patt = "^%[ChanServ%] .*$", repl = f"&lt;{self.tell_color}&gt;%0", targets = {"main", "misc"}},
-        {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
+        {patt = "^Your nick has changed.$", repl = f"Your nick has changed to {target}.", targets={"main", "misc"}},
+        {patt = "^%[NickServ%] .+$", repl = f"&lt;{self.tell_color}&gt;%0", sender = "^NickServ$", targets={"main", "misc"}},
+        {patt = "^%[ChanServ%] .+$", repl = f"&lt;{self.tell_color}&gt;%0", sender = "^ChanServ$", targets={"main", "misc"}},
+        {patt = "^! (.+)$", repl = f"%1", targets={"main", "misc"}},
         {patt = "^%* (.+)$", repl = f"&lt;{self.tell_color}&gt;%1 {self.irc_tag}", targets = {"main", "tells"}},
         {patt = "^.*$", repl = f"&lt;{self.tell_color}&gt;{sender} tells you '%0' {self.irc_tag}", targets = {"main", "tells"}}
       }
     }
   elseif target_type == "channel" then
-    if sender == "wotdiscord" then
-      rules = {
-        exclusions = {},
-        inclusions = {
-          {patt = f"^! {sender} ([^:]+): (.+)$", repl = f"%1 %2", targets = {"main", "misc"}},
-          {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
-          {patt = f"^%* {sender} ([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 %2 {self.discord_tag}", targets = {"main", "chats", "narrates"}},
-          {patt = f"^%* (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 {self.discord_tag}", targets = {"main", "chats", "narrates"}},          
-          {patt = "^([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 chats '%2' {self.discord_tag}", targets = {"main", "chats", "narrates"}},
-          {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} chats '%0' {self.discord_tag}", targets = {"main", "chats", "narrates"}}
-        }
+    rules = {
+      exclusions = {},
+      inclusions = {
+        {patt = "^%[TOPIC%] .+$", repl = f"&lt;{self.topic_color}&gt;%0", targets={"main", "misc"}},
+        {patt = f"^! {sender} ([^:]+): (.+)$", repl = f"%1 %2", sender = "^wotdiscord$", targets={"main", "misc"}},
+        {patt = "^! (.+)$", repl = f"%1", targets={"main", "misc"}},
+        {patt = f"^%* {sender} ([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 %2 {tag}", sender = "^wotdiscord$", targets = {"main", "chats", "narrates"}},
+        {patt = "^%* (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 {tag}", targets = {"main", "chats", "narrates"}},
+        {patt = "^([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 chats '%2' {tag}", sender = "^wotdiscord$", targets = {"main", "chats", "narrates"}},
+        {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} chats '%0' {tag}", targets = {"main", "chats", "narrates"}}
       }
-    else
-      rules = {
-        exclusions = {},
-        inclusions = {
-          {patt = "^%[TOPIC%] .+$", repl = f"&lt;{self.topic_color}&gt;%0", targets = {"main", "misc"}},
-          {patt = "^! (.+)$", repl = f"%1", targets = {"main", "misc"}},
-          {patt = "^%* (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 {self.irc_tag}", targets = {"main", "chats", "narrates"}},
-          {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} chats '%0' {self.irc_tag}", targets = {"main", "chats", "narrates"}}
-        }
-      }
-    end
+    }
   end
   
   if self.gag then  
@@ -128,8 +118,8 @@ end</script>
     table.insert(rules.exclusions, {patt = "^%[MOTD%]"})
     table.insert(rules.exclusions, {patt = "^%[NickServ%] This nickname is registered%. Please choose a different nickname, or identify via /msg NickServ IDENTIFY %S+ &lt;password&gt;$"})
     table.insert(rules.exclusions, {patt = "^%[NickServ%] You have 30 seconds to identify to your nickname before it is changed%.$"})
-    table.insert(rules.exclusions, {patt = "^%[NickServ] You are now identified for %S+%.$"})
-    table.insert(rules.exclusions, {patt = "^%[NickServ] Last login from: .+$"})
+    table.insert(rules.exclusions, {patt = "^%[NickServ%] You are now identified for %S+%.$"})
+    table.insert(rules.exclusions, {patt = "^%[NickServ%] Last login from: .+$"})
     table.insert(rules.exclusions, {patt = "^%[396%] user/%S+ is now your hidden host %(set by services.%)$"})
     for _, inclusion in ipairs(rules.inclusions) do
       inclusion.targets = table.n_complement(inclusion.targets, {"main"})
@@ -139,7 +129,7 @@ end</script>
   local exclude = nil
   if rules.exclusions then
     for _, exclusion in ipairs(rules.exclusions) do
-      if message:match(exclusion.patt) then
+      if message:match(exclusion.patt) and sender:match(exclusion.sender or "") then
         exclude = exclusion
         break
       end
@@ -149,7 +139,7 @@ end</script>
   local include = nil
   if rules.inclusions and not exclude then
     for _, inclusion in ipairs(rules.inclusions) do
-      if message:match(inclusion.patt) then
+      if message:match(inclusion.patt) and sender:match(inclusion.sender or "") then
         include = inclusion
         break
       end
