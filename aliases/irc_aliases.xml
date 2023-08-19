@@ -164,7 +164,7 @@ end</script>
 local channel = getIrcChannels()[1]
 if getIrcConnectedHost() and channel then
   sendIrc("", message)
-  irc:echo(f"&lt;{irc.chat_color}&gt;You chat '{message}' {irc.irc_tag}", {"main", "chats", "narrates"})
+  irc:echo(f"&lt;{irc.chat_color}&gt;You ircchat '{message}' {irc.irc_tag}", {"main", "chats", "narrates"})
 elseif not channel then
   irc:echo("&lt;red&gt;Not connected to channel", {"main", "chats", "narrates"})
 else
@@ -172,7 +172,7 @@ else
 end</script>
 				<command></command>
 				<packageName></packageName>
-				<regex>(?i)^ *(?:irc chat|cc|cch|ccha|cchat|cn|cna|cnar|cnarr) +(.+)$</regex>
+				<regex>(?i)^ *(?:irc chat|cc|cn) +(.+)$</regex>
 			</Alias>
 			<Alias isActive="yes" isFolder="no">
 				<name>irc_tell</name>
@@ -180,7 +180,7 @@ end</script>
 local message = matches[3]:trim()
 if getIrcConnectedHost() then
   sendIrc("", f"/msg {target} {message}")
-  irc:echo(f"&lt;{irc.tell_color}&gt;You tell {target} '{message}' {irc.irc_tag}", {"main", "tells"})
+  irc:echo(f"&lt;{irc.tell_color}&gt;You irctell {target} '{message}' {irc.irc_tag}", {"main", "tells"})
 else
   irc:echo("&lt;red&gt;Not connected to IRC", {"main", "tells"})
 end</script>
@@ -193,7 +193,7 @@ end</script>
 				<script>local message = matches[2]:trim()
 if getIrcConnectedHost() and irc.reply_to then
   sendIrc("", f"/msg {irc.reply_to} {message}")
-  irc:echo(f"&lt;{irc.tell_color}&gt;You tell {irc.reply_to} '{message}' {irc.irc_tag}", {"main", "tells"})
+  irc:echo(f"&lt;{irc.tell_color}&gt;You irctell {irc.reply_to} '{message}' {irc.irc_tag}", {"main", "tells"})
 elseif not irc.reply_to then
   irc:echo(f"&lt;{irc.tell_color}&gt;No one to reply to {irc.irc_tag}", {"main", "tells"})
 else
