@@ -94,7 +94,7 @@ end</script>
         {patt = "^%[ChanServ%] .+$", repl = f"&lt;{self.tell_color}&gt;%0", sender = "^ChanServ$", targets={"main", "misc"}},
         {patt = "^! (.+)$", repl = f"%1", targets={"main", "misc"}},
         {patt = "^%* (.+)$", repl = f"&lt;{self.tell_color}&gt;%1 {self.irc_tag}", targets = {"main", "tells"}},
-        {patt = "^.*$", repl = f"&lt;{self.tell_color}&gt;{sender} tells you '%0' {self.irc_tag}", targets = {"main", "tells"}}
+        {patt = "^.*$", repl = f"&lt;{self.tell_color}&gt;{sender} irctells you '%0' {self.irc_tag}", targets = {"main", "tells"}}
       }
     }
   elseif target_type == "channel" then
@@ -106,8 +106,8 @@ end</script>
         {patt = "^! (.+)$", repl = f"%1", targets={"main", "misc"}},
         {patt = f"^%* {sender} ([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 %2 {tag}", sender = "^wotdiscord$", targets = {"main", "chats", "narrates"}},
         {patt = "^%* (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 {tag}", targets = {"main", "chats", "narrates"}},
-        {patt = "^([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 chats '%2' {tag}", sender = "^wotdiscord$", targets = {"main", "chats", "narrates"}},
-        {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} chats '%0' {tag}", targets = {"main", "chats", "narrates"}}
+        {patt = "^([^:]+): (.+)$", repl = f"&lt;{self.chat_color}&gt;%1 ircchats '%2' {tag}", sender = "^wotdiscord$", targets = {"main", "chats", "narrates"}},
+        {patt = "^.*$", repl = f"&lt;{self.chat_color}&gt;{sender} ircchats '%0' {tag}", targets = {"main", "chats", "narrates"}}
       }
     }
   end
